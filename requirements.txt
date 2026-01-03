@@ -1,1 +1,5 @@
 selenium
+opencv-python
+numpy
+mss
+ultralytics
