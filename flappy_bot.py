@@ -21,6 +21,8 @@ class bot_controller:
         self.driver = webdriver.Chrome()
         self.driver.get("https://flappybird.io/")
         self.canvas = self.driver.find_element(By.ID, "application-canvas")
+        self.model = YOLO('/Users/naijei/ML-Bots/Flappy-Bot/FlappyBirdYoloModel/my_model.pt') 
+
     
     @staticmethod
     def loadImage(file_path):
@@ -51,24 +53,22 @@ class bot_controller:
             "height": canvas_h
         } #Sets region
         screenshot_array = np.array(self.scc.grab(monitor)) #Gets screenshot
-        return cv2.cvtColor(screenshot_array, cv2.COLOR_BGRA2GRAY) #Turns to black and white
+        return screenshot_array[:, :, :3] #Turns to black and white
         
     
-    def templateMatch(self, template_image, current_screen_shot = None):
-        pass
+    def runYOLO(self, img, imgsz=320, conf=0.5):
+        results = self.model.predict(source=img, save=False, imgsz=imgsz, conf=conf)
+
+        for result in results:
+            boxes = result.boxes 
     
     
-#bot = bot_controller(matching_confidence = 0.8, offy = 125, lowerwidth = 630)
-#img = bot.getScreenShot() #UNCOMMENT TO DOUBLE CHECK ALINEMENT: I have found that matching_confidence = 0.8, offy = 125, lowerwidth = 630 works best
-#cv2.imshow("preview", img)
-#cv2.waitKey(0) 
-
-model = YOLO('/Users/naijei/ML-Bots/Flappy-Bot/FlappyBirdYoloModel/my_model.pt') 
-
-results = model.predict(source="/Users/naijei/ML-Bots/Flappy-Bot/data/yolo_frames/frame_00130.png", save=True, conf=0.5)
-
-for result in results:
-    boxes = result.boxes 
+bot = bot_controller(matching_confidence = 0.8, offy = 125, lowerwidth = 630)
+while True:
+    img = bot.getScreenShot() #UNCOMMENT TO DOUBLE CHECK ALINEMENT: I have found that matching_confidence = 0.8, offy = 125, lowerwidth = 630 works best
+    #cv2.imshow("preview", img)
+    #cv2.waitKey(0) 
+    bot.runYOLO(img, imgsz=192)
 
 
 
